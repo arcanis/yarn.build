@@ -7,7 +7,7 @@ import {
   miscUtils,
 } from "@yarnpkg/core";
 import { PortablePath } from "@yarnpkg/fslib";
-import { Command, Usage } from "clipanion";
+import { Command, Option, Usage } from "clipanion";
 import path from "path";
 
 import { EventEmitter } from "events";
@@ -17,17 +17,15 @@ import RunSupervisor, { RunSupervisorReporterEvents } from "../supervisor";
 import { addTargets } from "../supervisor/workspace";
 
 export default class Test extends BaseCommand {
-  @Command.Boolean(`--json`)
-  json = false;
+  static paths = [
+    [`test`],
+  ];
 
-  @Command.Boolean(`-v,--verbose`)
-  verbose = false;
+  json = Option.Boolean(`--json`, false);
+  verbose = Option.Boolean(`-v,--verbose`, false);
+  ignoreTestCache = Option.Boolean(`--ignore-cache`, false);
 
-  @Command.Boolean(`--ignore-cache`)
-  ignoreTestCache = false;
-
-  @Command.Rest()
-  public runTarget: string[] = [];
+  runTarget = Option.Rest();
 
   static usage: Usage = Command.Usage({
     category: `Test commands`,
@@ -41,7 +39,6 @@ export default class Test extends BaseCommand {
   // Keep track of what is built, and if it needs to be rebuilt
   runLog: { [key: string]: { hash: string | undefined } } = {};
 
-  @Command.Path(`test`)
   async execute() {
     const configuration = await Configuration.find(
       this.context.cwd,
